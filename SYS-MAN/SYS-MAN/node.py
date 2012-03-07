@@ -1,10 +1,16 @@
+'''
+Created on 06/mar/2012
+
+@author: frosa
+'''
+
 from smerrors import *
 class Node:
-    """A node representation.
+    '''A node representation.
     
     Attributes:
-        nodename -- hostname, default = NOD
-    """
+        name -- hostname, default = NOD
+    '''
     def __init__(self, nodename='NOD'):
         if len(nodename) == 3:
             self.name = nodename

@@ -1,3 +1,9 @@
+'''
+Created on 06/mar/2012
+
+@author: frosa
+'''
+
 class NameLengthError(Exception):
     """Exception raised for wrong name length.
     
