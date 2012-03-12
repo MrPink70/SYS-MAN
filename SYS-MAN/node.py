@@ -17,6 +17,11 @@ class Node:
         else:
             raise NameLengthError(nodename, 'name must be 3 character')
 
+    def update(self):
+        '''
+        Update all the available executables of the node
+        ''' 
+        pass
 
 if __name__ == '__main__':
     node1 = Node('D01')

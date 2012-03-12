@@ -13,7 +13,7 @@ class executable():
     '''
 
 
-    def __init__(self, triliteral, execname):
+    def __init__(self, triliteral, execname, version):
         '''
         Constructor
         '''
@@ -22,5 +22,5 @@ class executable():
         else:
             raise NameLengthError(triliteral, 'name must be 3 character')
         self.filename = execname
-        
-        
+
+    def get_version(self):
