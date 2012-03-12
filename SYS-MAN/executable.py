@@ -24,3 +24,4 @@ class executable():
         self.filename = execname
 
     def get_version(self):
+        pass
