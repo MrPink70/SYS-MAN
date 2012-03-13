@@ -5,13 +5,12 @@ Created on 07/mar/2012
 '''
 
 from smerrors import *
-class executable():
+class Executable():
     '''A executable representation
     
     Attributes:
         
     '''
-
 
     def __init__(self, triliteral, execname, version):
         '''
@@ -23,5 +22,8 @@ class executable():
             raise NameLengthError(triliteral, 'name must be 3 character')
         self.filename = execname
 
-    def get_version(self):
+    def get_local_version(self):
+        pass
+    
+    def get_remote_version(self):
         pass
