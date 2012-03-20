@@ -8,8 +8,8 @@ from smerrors import *
 from subprocess import check_output
 import os
 
-def get_executable(execname, path):
-    executable = Executable(execname, path)
+def get_executable(execname, path, description=''):
+    executable = Executable(execname, path, description)
     return executable
     
 class Executable():
@@ -19,56 +19,89 @@ class Executable():
         
     '''
 
-    def __init__(self, execname, path):
+    def __init__(self, execname, path, description=''):
         '''
         Constructor
         '''
-        self.filename = execname
-        self.location = path
-        self.fullname = path + os.sep + execname
-        # controllare la presenza del file nel path
-        # se l'eseguibile non viene trovato chiamare l'eccezione
+        self._filename = execname
+        self._location = path
+        self._fullname = path + os.sep + execname
+        self._description = description
 
-    def get_CSCI_version(self):
-        fullversion = check_output(['/usr/bin/ident', self.fullname]).splitlines()
+    def set_exec_description(self, description):
+        '''
+        Set the description of the Executable
+        '''
+        self._description = description
+        
+    def get_exec_name(self):
+        '''
+        Return the Executable name
+        '''
+        return self._filename
+    
+    def get_exec_description(self):
+        '''
+        Return the Ezecutable description
+        '''
+        return self._description
+        
+    def get_csci_version(self):
+        '''
+        Return a list of the Executable's components
+        Equivalent to the shell command 'ident EXXXYYYN-MMRFCOOOO | grep CSCI' 
+        '''
+        fullversion = check_output(['/usr/bin/ident', self._fullname]).splitlines()
         version = ''
         for line in fullversion:
             if line.find('CSCI') > -1: version = version + line.lstrip() + '\n'
         return version.rstrip('\n')
     
-    def get_EXEC_version(self):
-        fullversion = self.get_CSCI_version().splitlines()
+    def get_exec_version(self):
+        fullversion = self.get_csci_version().splitlines()
         version = ''
         for line in fullversion:
-            if line.find(self.filename[0:8]) > -1: version = version + line + '\n'
+            if line.find(self._filename[0:8]) > -1: version = version + line + '\n'
+        return version.rstrip('\n')
+    
+    def get_exec_os_version(self):
+        fullversion = self.get_csci_version().splitlines()
+        version = ''
+        for line in fullversion:
+            if line.find('CSCIoperativesystem') > -1: version = version + line + '\n'
         return version.rstrip('\n')
     
     def get_md5(self):
-        md5code = check_output(['/usr/bin/md5sum', self.fullname])
+        md5code = check_output(['/usr/bin/md5sum', self._fullname])
         return md5code.rstrip('\n')
     
     def get_sha1(self):
-        sha1code = check_output(['/usr/bin/sha1sum', self.fullname])
+        sha1code = check_output(['/usr/bin/sha1sum', self._fullname])
         return sha1code.rstrip('\n')
  
     def get_privileges(self):
-        statexecfile = os.stat(self.fullname).st_mode
+        statexecfile = os.stat(self._fullname).st_mode
         return statexecfile
     
     def get_owner(self):
-        statexecfile = os.stat(self.fullname).st_uid
+        statexecfile = os.stat(self._fullname).st_uid
         return statexecfile
     
     def is_versioned(self):
-        version = self.get_EXEC_version().splitlines()
+        version = self.get_exec_version().splitlines()
         if len(version) == 1:
             return 1
         else:
             return 0
-        
+
+
+
+ 
 if __name__ == '__main__':
     import glob
-    path = str(raw_input('Inserisci il path degli eseguibili: '))
+    #path = str(raw_input('Inserisci il path degli eseguibili: '))
+    #path = '/home/Subang/APPO'
+    path = '/home/fabrizio/Test/SYS-MAN/APPO'
     listfile = glob.glob(path + '/E*3')
     print listfile
     for file in listfile:
@@ -79,7 +112,7 @@ if __name__ == '__main__':
         else:
             print 'L\'eseguibile e\' di linea'
         #print 'fullversion :\n' + exfile.get_CSCI_version()
-        print 'versione    :\n' + exfile.get_EXEC_version()
+        print 'versione    :\n' + exfile.get_exec_version()
         #print 'md5         :\n' + exfile.get_md5()
         #print 'sha1        :\n' + exfile.get_sha1()
         #print 'privilegi   :\n' + oct(exfile.get_privileges())
