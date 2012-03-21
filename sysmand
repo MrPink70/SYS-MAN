@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+'''
+Created on Mar 20, 2012
+
+@author: fabrizio
+'''
+
+import sysman.executable,sysman.node
+
+import socket,os
+
+localhostname = socket.gethostname()
+# BN1 usato per test commentare la linea sottostante
+localhostname = 'BN1'
+if os.access('/home/fabrizio/Test/SYS-MAN/APPO/sysmand.cfg', os.F_OK):
+    print 'file trovato'
+else:
+    print 'file non trovato'
+localnode = sysman.node.Node(localhostname)
+#if __name__ == '__main__':
+#    pass
