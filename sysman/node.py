@@ -11,17 +11,21 @@ class Node:
     Attributes:
         name -- hostname, default = NOD
     '''
-    def __init__(self, nodename='NOD', description=''):
+    def __init__(self, nodename='NOD', description='', lastupd='19880000000000'):
         if len(nodename) == 3:
             self._name = nodename
         else:
-            raise NameLengthError(nodeName, 'name must be 3 character')
+            raise NameLengthError(nodename, 'name must be 3 character')
         self._description = description
+        self._lastupd = lastupd
         self._execlist = []
         
     def set_node_description(self, description):
         self._description = description
     
+    def set_last_upd_time(self,lastupd):
+        self._lastupd = lastupd
+        
     def insert_node_exec(self, exeobj):
         self._execlist.append(exeobj)
     
@@ -55,7 +59,7 @@ class Node:
 
 
 if __name__ == '__main__':
-    from executable import *
+    from executable import get_executable
     #path = '/home/Subang/APPO'
     path = '/home/fabrizio/Test/SYS-MAN/APPO'
     exfile = get_executable('EA20IKS1-10RFCRHEL3', path)

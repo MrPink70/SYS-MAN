@@ -1,13 +1,17 @@
 
 
 class System():
-    def __init__(self, sysName, description=''):
+    def __init__(self, sysName, description='', lastupd='19880000000000'):
         self._name = sysName
         self._nodelist = []
         self._description = description
+        self._lastupd = lastupd
 
     def set_description(self, description):
         self._description = description
+        
+    def set_last_upd_time(self,lastupd):
+        self._lastupd = lastupd
         
     def insert_system_node(self, node):
         self._nodelist.append(node)

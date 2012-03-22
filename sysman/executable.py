@@ -19,7 +19,7 @@ class Executable():
         
     '''
 
-    def __init__(self, execname, path, description=''):
+    def __init__(self, execname, path, description='', lastupd='19880000000000'):
         '''
         Constructor
         '''
@@ -27,6 +27,7 @@ class Executable():
         self._location = path
         self._fullname = path + os.sep + execname
         self._description = description
+        self._lastupd = lastupd
 
     def set_exec_description(self, description):
         '''
@@ -34,11 +35,20 @@ class Executable():
         '''
         self._description = description
         
+    def set_last_upd_time(self,lastupd):
+        self._lastupd = lastupd
+        
     def get_exec_name(self):
         '''
         Return the Executable name
         '''
         return self._filename
+    
+    def get_exec_short_name(self):
+        '''
+        Return the Executable 8 digit name
+        '''
+        return self._filename[0:8]
     
     def get_exec_description(self):
         '''
@@ -64,12 +74,18 @@ class Executable():
             if line.find(self._filename[0:8]) > -1: version = version + line + '\n'
         return version.rstrip('\n')
     
+    def get_exec_short_version(self):
+        return str(self.get_exec_version()).lstrip('$CSCIrevision: ').rstrip(' $')
+    
     def get_exec_os_version(self):
         fullversion = self.get_csci_version().splitlines()
         version = ''
         for line in fullversion:
             if line.find('CSCIoperativesystem') > -1: version = version + line + '\n'
         return version.rstrip('\n')
+    
+    def get_exec_os_short_version(self):
+        return str(self.get_exec_os_version()).lstrip('$CSCIoperativesystem: ').rstrip(' $')
     
     def get_md5(self):
         md5code = check_output(['/usr/bin/md5sum', self._fullname])

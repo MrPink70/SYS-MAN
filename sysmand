@@ -6,17 +6,56 @@ Created on Mar 20, 2012
 @author: fabrizio
 '''
 
-import sysman.executable,sysman.node
+import sysman.confhandler
 
-import socket,os
+import socket,os,xml.parsers.expat
 
 localhostname = socket.gethostname()
 # BN1 usato per test commentare la linea sottostante
-localhostname = 'BN1'
-if os.access('/home/fabrizio/Test/SYS-MAN/APPO/sysmand.cfg', os.F_OK):
-    print 'file trovato'
-else:
-    print 'file non trovato'
-localnode = sysman.node.Node(localhostname)
+# localhostname = 'BN1'
+confFile = '/home/frosa/APPO/sysmand.xml'
+
+#def load_conf(cf):
+#    def start_element(name, attrs):
+#        #print 'Start element:', name, attrs
+#        if name == 'system':
+#            print 'System: ' + attrs['systemname'] + ' last update: ' + attrs['lastupd']
+#        elif name == 'node':
+#            print '+- Node: ' + attrs['hostname'] + ' (' + attrs['desc'] + ') ' + attrs['lastupd']
+#        elif name == 'executable':
+#            print '   +- Exec: ' + attrs['execname'] + ' in ' + attrs['path'] +' (' + attrs['desc'] + ') ' + attrs['lastupd']
+#    def end_element(name):
+#        pass
+#        #print 'End element:', name
+#    def char_data(data):
+#        #print 'Character data:', repr(data)
+#        pass
+#    config = xml.parsers.expat.ParserCreate()
+#    config.StartElementHandler = start_element
+#    config.EndElementHandler = end_element
+#    config.CharacterDataHandler = char_data
+#    config.ParseFile(cf)
+#    
+#if os.access(confFile, os.F_OK):
+#    cf = open(confFile,'r')
+#    load_conf(cf)
+#else:
+#    print 'file non trovato'
+#localnode = sysman.node.Node(localhostname)
+print localhostname
+configuration = sysman.confhandler.Configuration(confFile)
+ucraina = configuration.get_system('Ucraina')
+print 'System: ' + ucraina.get_system_name() + ' (' + ucraina.get_system_description() + ')'
+for node in ucraina.get_system_node_list():
+    print '--------------------------------------------------'
+    print '  Node: ' + node.get_node_name() + ' (' + node.get_node_description() + ')'
+    print '    Exec list:'
+    for exe in node.get_node_exec_list():
+        if exe.is_versioned():
+            print '      ' + exe.get_exec_short_version()
+        else:
+            print '      ' + exe.get_exec_short_name() + ' generated from Ing.'
+        print '        ' + exe.get_exec_os_short_version()
+
 #if __name__ == '__main__':
 #    pass
