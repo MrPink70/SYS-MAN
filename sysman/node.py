@@ -39,6 +39,9 @@ class Node:
         
     def get_node_description(self):
         return str(self._description)
+    
+    def get_node_last_upd(self):
+        return self._lastupd
 
     def get_node_exec_version_list(self):
         verslist = []
@@ -58,29 +61,29 @@ class Node:
 
 
 
-if __name__ == '__main__':
-    from executable import get_executable
-    #path = '/home/Subang/APPO'
-    path = '/home/fabrizio/Test/SYS-MAN/APPO'
-    exfile = get_executable('EA20IKS1-10RFCRHEL3', path)
-    node1 = Node('D01')
-    print 'Nome Nodo: ' + node1.get_node_name()
-    node1.insert_node_exec(exfile)
-    verslist = node1.get_node_exec_version_list()
-    print '--------------------------------------------------------------'
-    for vers in verslist:
-        print 'Versione: ' + str(vers)
-    exfile = get_executable('E0R1XSD1-01RFCRHEL3', path)
-    node1.insert_node_exec(exfile)
-    verslist = node1.get_node_exec_version_list()
-    print '--------------------------------------------------------------'
-    for vers in verslist:
-        print 'Versione: ' + str(vers)
-    node1.remove_node_exec('EA20IKS1-10RFCRHEL3')
-    verslist = node1.get_node_exec_version_list()
-    print '--------------------------------------------------------------'
-    for vers in verslist:
-        print 'Versione: ' + str(vers)
+#if __name__ == '__main__':
+#    from executable import get_executable
+#    #path = '/home/Subang/APPO'
+#    path = '/home/fabrizio/Test/SYS-MAN/APPO'
+#    exfile = get_executable('EA20IKS1-10RFCRHEL3', path)
+#    node1 = Node('D01')
+#    print 'Nome Nodo: ' + node1.get_node_name()
+#    node1.insert_node_exec(exfile)
+#    verslist = node1.get_node_exec_version_list()
+#    print '--------------------------------------------------------------'
+#    for vers in verslist:
+#        print 'Versione: ' + str(vers)
+#    exfile = get_executable('E0R1XSD1-01RFCRHEL3', path)
+#    node1.insert_node_exec(exfile)
+#    verslist = node1.get_node_exec_version_list()
+#    print '--------------------------------------------------------------'
+#    for vers in verslist:
+#        print 'Versione: ' + str(vers)
+#    node1.remove_node_exec('EA20IKS1-10RFCRHEL3')
+#    verslist = node1.get_node_exec_version_list()
+#    print '--------------------------------------------------------------'
+#    for vers in verslist:
+#        print 'Versione: ' + str(vers)
     
     #try:
     #    node2 = Node('PIPPO')

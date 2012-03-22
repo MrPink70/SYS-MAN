@@ -3,7 +3,7 @@ Created on Mar 22, 2012
 
 @author: frosa
 '''
-import xml.parsers.expat,os
+import xml.parsers.expat,os,shutil
 from sysman import system,node,executable
 
 class Configuration():
@@ -11,16 +11,17 @@ class Configuration():
     classdocs
     '''
 
-    def __init__(self, configfile):
+    def __init__(self, configfile=''):
         '''
         Constructor
         '''
         self._systems = []
-        if os.access(configfile, os.F_OK):
+        if configfile != '' and os.access(configfile, os.F_OK):
             cf = open(configfile,'r')
-            self._load_conf(cf)
+            self.load_conf(cf)
+            cf.close()
             
-    def _load_conf(self,cfd):
+    def load_conf(self,cfd):
         
         def _start_element(name, attrs):
             global apposys,apponode,appoexe
@@ -51,8 +52,45 @@ class Configuration():
         config.CharacterDataHandler = _char_data
         config.ParseFile(cfd)
     
+    def add_system(self, sys):
+        self._systems.append(sys)
+        
+    def remove_system(self, systemname):
+        for sys in self._systems:
+            if sys.get_system_name() == systemname:
+                self._systems.remove(sys)
+                
     def get_system(self, systemname):
         for sys in self._systems:
             if sys.get_system_name() == systemname:
                 return sys
-        
+            
+    def save(self, configfile):
+        if configfile != '':
+            if os.access(configfile, os.F_OK):
+                shutil.move(configfile, os.path.splitext(configfile) + 'bck')
+            else:
+                fc = open(configfile, 'w')
+                fc.write('<?xml version="1.0"?>')
+                for sys in self._systems:
+                    line ='<system systemname="' + sys.get_system_name() + \
+                    '" desc="' + sys.get_system_description() + \
+                    '" lastupd="' + sys.get_system_last_upd() + \
+                    '">'
+                    fc.write(line)
+                    for node in sys.get_system_node_list():
+                        line = '  <node hostname="' + node.get_node_name() + \
+                        '" desc="' + node.get_node_description() + \
+                        '" lastupd="' + node.get_node_last_upd() + \
+                        '">'
+                        fc.write(line)
+                        for exe in node.get_node_exec_list():
+                            line = '    <executable execname="' + exe.get_exec_name() + \
+                            '" path="' + exe.get_exec_location() + \
+                            '" desc="' + exe.get_exec_description() + \
+                            '" lastupd="' + exe.get_exec_last_upd() + \
+                            '"/>'
+                            fc.write(line)
+                        fc.write('  </node>')
+                    fc.write('</system>')
+                fc.close()

@@ -13,7 +13,29 @@ import socket,os,xml.parsers.expat
 localhostname = socket.gethostname()
 # BN1 usato per test commentare la linea sottostante
 # localhostname = 'BN1'
-confFile = '/home/frosa/APPO/sysmand.xml'
+PATH = '/home/fabrizio/APPO'
+confFile = '/home/fabrizio/APPO/sysmand.xml'
+lsu = '1988010101000000'
+system1 = sysman.system.System('Ucraina', 'Ucraina Strela\' OPS System', lsu)
+node1 = sysman.node.Node('D01', 'Controller Working Position', lsu)
+node2 = sysman.node.Node('D02', 'Controller Working Position', lsu)
+exe1 = sysman.executable.Executable('E000IKM0-01RFCRHEL3', PATH, 'Kernel Mara Interface 1', lsu)
+exe2 = sysman.executable.Executable('E000IKM0-02RFCRHEL3', PATH, 'Kernel Mara Interface 2', lsu)
+exe3 = sysman.executable.Executable('E000IKM0-03RFCRHEL3', PATH, 'Kernel Mara Interface 3', lsu)
+exe4 = sysman.executable.Executable('E0R1XSD1-01RFCRHEL3', PATH, 'System Messages Dispatcher', lsu)
+exe5 = sysman.executable.Executable('EA20SPV1-01RFCRHEL3', PATH, 'Node Supervisor 1', lsu)
+exe6 = sysman.executable.Executable('EA20DTS1-01RFCRHEL3', PATH, 'DTS', lsu)
+node1.insert_node_exec(exe1)
+node1.insert_node_exec(exe2)
+node1.insert_node_exec(exe3)
+node1.insert_node_exec(exe4)
+node2.insert_node_exec(exe5)
+node2.insert_node_exec(exe6)
+system1.insert_system_node(node1)
+system1.insert_system_node(node2)
+config1 =sysman.confhandler.Configuration()
+config1.add_system(system1)
+config1.save(confFile)
 
 #def load_conf(cf):
 #    def start_element(name, attrs):
@@ -42,7 +64,7 @@ confFile = '/home/frosa/APPO/sysmand.xml'
 #else:
 #    print 'file non trovato'
 #localnode = sysman.node.Node(localhostname)
-print localhostname
+#print localhostname
 configuration = sysman.confhandler.Configuration(confFile)
 ucraina = configuration.get_system('Ucraina')
 print 'System: ' + ucraina.get_system_name() + ' (' + ucraina.get_system_description() + ')'
