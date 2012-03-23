@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import sysman.client
+
+servername = 'D03'
+serverport = 61874
+
+print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
+
+connection = sysman.client.Client(servername,serverport)
+info = connection.query('help')
+print info
+connection.query('stop')

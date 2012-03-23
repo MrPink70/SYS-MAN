@@ -68,29 +68,29 @@ class Configuration():
     def save(self, configfile):
         if configfile != '':
             if os.access(configfile, os.F_OK):
-                shutil.move(configfile, os.path.splitext(configfile) + 'bck')
-            else:
-                fc = open(configfile, 'w')
-                fc.write('<?xml version="1.0"?>')
-                for sys in self._systems:
-                    line ='<system systemname="' + sys.get_system_name() + \
-                    '" desc="' + sys.get_system_description() + \
-                    '" lastupd="' + sys.get_system_last_upd() + \
-                    '">'
+                basefile, xmlext = os.path.splitext(configfile)
+                shutil.move(configfile, basefile + '.bck')
+            fc = open(configfile, 'w')
+            fc.write('<?xml version="1.0"?>\n')
+            for sys in self._systems:
+                line ='<system systemname="' + sys.get_system_name() + \
+                '" desc="' + sys.get_system_description() + \
+                '" lastupd="' + sys.get_system_last_upd() + \
+                '">\n'
+                fc.write(line)
+                for node in sys.get_system_node_list():
+                    line = '  <node hostname="' + node.get_node_name() + \
+                    '" desc="' + node.get_node_description() + \
+                    '" lastupd="' + node.get_node_last_upd() + \
+                    '">\n'
                     fc.write(line)
-                    for node in sys.get_system_node_list():
-                        line = '  <node hostname="' + node.get_node_name() + \
-                        '" desc="' + node.get_node_description() + \
-                        '" lastupd="' + node.get_node_last_upd() + \
-                        '">'
+                    for exe in node.get_node_exec_list():
+                        line = '    <executable execname="' + exe.get_exec_name() + \
+                        '" path="' + exe.get_exec_location() + \
+                        '" desc="' + exe.get_exec_description() + \
+                        '" lastupd="' + exe.get_exec_last_upd() + \
+                        '"/>\n'
                         fc.write(line)
-                        for exe in node.get_node_exec_list():
-                            line = '    <executable execname="' + exe.get_exec_name() + \
-                            '" path="' + exe.get_exec_location() + \
-                            '" desc="' + exe.get_exec_description() + \
-                            '" lastupd="' + exe.get_exec_last_upd() + \
-                            '"/>'
-                            fc.write(line)
-                        fc.write('  </node>')
-                    fc.write('</system>')
-                fc.close()
+                    fc.write('  </node>\n')
+                fc.write('</system>\n')
+            fc.close()

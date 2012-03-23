@@ -6,16 +6,26 @@ Created on Mar 20, 2012
 @author: fabrizio
 '''
 
-import sysman.confhandler
+import sysman.confhandler,sysman.server
 
-import socket,os,xml.parsers.expat
+import socket,os
 
-localhostname = socket.gethostname()
-# BN1 usato per test commentare la linea sottostante
-# localhostname = 'BN1'
-PATH = '/home/fabrizio/APPO'
-confFile = '/home/fabrizio/APPO/sysmand.xml'
+serverport = 61874
 lsu = '1988010101000000'
+localhostname = socket.gethostname()
+
+print 'Starting SYSMAN daemon on server ' + localhostname + ' port ' + str(serverport)
+
+daemon = sysman.server.Server(serverport)
+
+if localhostname == 'Giove':
+    PATH = '/home/fabrizio/APPO'
+    localhostname = 'BN1'
+elif localhostname == 'D03':
+    PATH = '/home/frosa/APPO'
+
+confFile =  PATH + os.sep + 'sysmand.xml'
+
 system1 = sysman.system.System('Ucraina', 'Ucraina Strela\' OPS System', lsu)
 node1 = sysman.node.Node('D01', 'Controller Working Position', lsu)
 node2 = sysman.node.Node('D02', 'Controller Working Position', lsu)
