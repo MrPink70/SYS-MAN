@@ -11,11 +11,13 @@ class Node:
     Attributes:
         name -- hostname, default = NOD
     '''
-    def __init__(self, nodename='NOD', description='', lastupd='19880000000000'):
-        if len(nodename) == 3:
-            self._name = nodename
-        else:
-            raise NameLengthError(nodename, 'name must be 3 character')
+    def __init__(self, nodename, ip, description='', lastupd='19880000000000'):
+#        if len(nodename) == 3:
+#            self._name = nodename
+#        else:
+#            raise NameLengthError(nodename, 'name must be 3 character')
+        self._name = nodename
+        self._ip = ip
         self._description = description
         self._lastupd = lastupd
         self._execlist = []
@@ -37,6 +39,9 @@ class Node:
     def get_node_name(self):
         return str(self._name)
         
+    def get_node_ip(self):
+        return self._ip
+    
     def get_node_description(self):
         return str(self._description)
     

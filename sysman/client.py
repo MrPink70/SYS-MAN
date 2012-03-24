@@ -17,13 +17,11 @@ class Client():
         '''
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.connect((addr,port))
-        print 'Socket CONNECTED'
         self._lock=thread.allocate_lock()
         self._addr = addr
         self._port = port
         
     def query(self,req):
-        print 'Start querying'
         with self.lock():
             #get the file
             f=self.socket().makefile()
@@ -34,14 +32,12 @@ class Client():
             #read until final token
             for line in f:
                 #get rid of excess newline
-#                print line
                 line=re.sub('\n','',line)
                 if line == '*DONE':
                     #it's over
                     break
                 #append the line
                 info += '%s\n' % line
-            print 'End querying'
             return info
         
     def socket(self):

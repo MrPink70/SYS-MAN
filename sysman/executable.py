@@ -8,9 +8,9 @@ from smerrors import *
 from subprocess import check_output
 import os
 
-def get_executable(execname, path, description=''):
-    executable = Executable(execname, path, description)
-    return executable
+#def get_executable(execname, path, description=''):
+#    executable = Executable(execname, path, description)
+#    return executable
     
 class Executable():
     '''A executable representation
@@ -19,13 +19,16 @@ class Executable():
         
     '''
 
-    def __init__(self, execname, path, description='', lastupd='19880000000000'):
+    def __init__(self, execname, path, owner, mode, link='', description='', lastupd='19880000000000'):
         '''
         Constructor
         '''
         self._filename = execname
         self._location = path
         self._fullname = path + os.sep + execname
+        self._owner = owner
+        self._mode = mode
+        self._link = link
         self._description = description
         self._lastupd = lastupd
 
@@ -50,6 +53,15 @@ class Executable():
         '''
         return self._filename[0:8]
     
+    def get_exec_owner(self):
+        return self._owner
+    
+    def get_exec_mode(self):
+        return self._mode
+    
+    def get_exec_link(self):
+        return self._link
+    
     def get_exec_description(self):
         '''
         Return the Ezecutable description
@@ -73,25 +85,25 @@ class Executable():
             if line.find('CSCI') > -1: version = version + line.lstrip() + '\n'
         return version.rstrip('\n')
     
-    def get_exec_version(self):
+    def get_version(self):
         fullversion = self.get_csci_version().splitlines()
         version = ''
         for line in fullversion:
             if line.find(self._filename[0:8]) > -1: version = version + line + '\n'
         return version.rstrip('\n')
     
-    def get_exec_short_version(self):
-        return str(self.get_exec_version()).lstrip('$CSCIrevision: ').rstrip(' $')
+    def get_short_version(self):
+        return str(self.get_version()).lstrip('$CSCIrevision: ').rstrip(' $')
     
-    def get_exec_os_version(self):
+    def get_os_version(self):
         fullversion = self.get_csci_version().splitlines()
         version = ''
         for line in fullversion:
             if line.find('CSCIoperativesystem') > -1: version = version + line + '\n'
         return version.rstrip('\n')
     
-    def get_exec_os_short_version(self):
-        return str(self.get_exec_os_version()).lstrip('$CSCIoperativesystem: ').rstrip(' $')
+    def get_os_short_version(self):
+        return str(self.get_os_version()).lstrip('$CSCIoperativesystem: ').rstrip(' $')
     
     def get_md5(self):
         md5code = check_output(['/usr/bin/md5sum', self._fullname])
@@ -116,9 +128,6 @@ class Executable():
         else:
             return 0
 
-
-
- 
 #if __name__ == '__main__':
 #    import glob
 #    #path = str(raw_input('Inserisci il path degli eseguibili: '))

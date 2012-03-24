@@ -3,48 +3,82 @@ Created on Mar 23, 2012
 
 @author: frosa
 '''
-import socket,thread,re
+import socket,thread,re,cPickle
+
+import sysman.confhandler
 
 class Server():
     '''
     classdocs
     '''
 
-    def __init__(self,port):
+    def __init__(self,port,configfile):
         '''
         Constructor
         '''
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.bind(('',int(port)))
-        self._sock.listen(2)
-        print 'Socket in LISTEN'
         self._port = port
+        self._configfile = configfile
         self._mutex=thread.allocate_lock()
-        self._commandlist = ['help','stop']
+        self._commandlist = ['help',
+                             'load_conf:<sysname>',
+                             'is_conf_available',
+                             'status',
+                             'set_conf',
+                             'update',
+                             'stop']
+        self._config = sysman.confhandler.Configuration(self._configfile) 
+        self._sock.listen(2)
         try:
             while True:
                 conn, addr = self._sock.accept()
+#                print 'assign connection parameters'
                 # break off a thread to handle the connection
                 thread.start_new_thread(self._handle_connection,(conn,addr[0]))
+#                print 'starting thread'
         except:
             print "Exception occured!"
-        self._sock.close()
+        self.stop()
         
     def _handle_connection(self,conn,addr):
+#        print 'start handle_connection'
         cd = conn.makefile()
-        for req in cd:
-            print 'Reading QUERY'
-            req = re.sub('[\n\r]','',req)
+#        print 'create file descriptor'
+        for command in cd:
+            command = re.sub('[\n\r]','',command)
+#            print 'strip LF CR'
+            match = re.match('^(.+):(.+)$',command)
+#            print 'separate received token'
+            req = match.group(1)
+#            print 'assigne request %s' % req
+            par = match.group(2)
+#            print 'assigne parameter %s' % par
             with self._mutex:
                 if req == 'help':
-                    print 'received HELP command'
-                    cd.write(str(self._commandlist) + '\n')
+                    cd.write('%s\n' % str(self._commandlist))
+                elif req == 'load_conf':
+                    systemname = par
+                    cd.write('%s\n' % cPickle.dumps(self._config.get_system(systemname)))
+                    pass
+                elif req == 'is_conf_available':
+                    cd.write('%s\n' % self._config.is_config_available())                    
+                elif req == 'status':
+                    pass
+                elif req == 'set_conf':
+                    pass
+                elif req == 'update':
+                    pass
                 elif req == 'stop':
-                    print 'Received STOP command'
+                    cd.write('Received STOP command\n*DONE\n')
+                    cd.flush()
                     conn.close()
-                    raise Exception('STOP')
+                    thread.exit()
+                else:
+                    cd.write('Invalid order received\n')
                 cd.write('*DONE\n')
                 cd.flush()
         conn.close()
-        print 'Connection CLOSED'
-                    
+    
+    def stop(self):
+        self._sock.close()

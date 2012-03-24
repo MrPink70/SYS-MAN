@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 
 import sysman.client
+import socket,re
 
-servername = 'D03'
+servername = socket.gethostname()
 serverport = 61874
 
 print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
+print 'Type \'help\' for command list. Type \'quit\' to end session'
 
 connection = sysman.client.Client(servername,serverport)
-info = connection.query('help')
-print info
-connection.query('stop')
+while True:
+    comm = str(raw_input('@> '))
+    if comm == 'quit':
+        break
+    match = re.match('^(.+):(.+)$',comm)
+    if not match:
+        comm = comm + ':nop'
+    info = re.sub('[\n\r]','',connection.query(comm))
+    print info
+#info = connection.query('help:ciao')
+print 'Bye!'

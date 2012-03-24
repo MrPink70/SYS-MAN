@@ -16,24 +16,36 @@ class Configuration():
         Constructor
         '''
         self._systems = []
-        if configfile != '' and os.access(configfile, os.F_OK):
-            cf = open(configfile,'r')
-            self.load_conf(cf)
-            cf.close()
-            
-    def load_conf(self,cfd):
+        self._configfile = configfile
+        
+    def is_config_available(self):
+        if self._configfile != '' and os.access(self._configfile, os.F_OK):
+            return 1
+        else:
+            return 0
+        
+    def load_conf(self):
+        cfd = open(self._configfile,'r')
         
         def _start_element(name, attrs):
             global apposys,apponode,appoexe
             if name == 'system':
-#                print '+--System: ' + attrs['systemname'] + ' (' + attrs['desc'] + ') ' + ' last update: ' + attrs['lastupd']
-                apposys = system.System(attrs['systemname'], attrs['desc'], attrs['lastupd'])
+                apposys = system.System(attrs['systemname'],
+                                        attrs['desc'],
+                                        attrs['lastupd'])
             elif name == 'node':
-#                print '|  +--Node: ' + attrs['hostname'] + ' (' + attrs['desc'] + ') ' + attrs['lastupd']
-                apponode = node.Node(attrs['hostname'], attrs['desc'], attrs['lastupd'])
+                apponode = node.Node(attrs['hostname'],
+                                     attrs['ip'],
+                                     attrs['desc'],
+                                     attrs['lastupd'])
             elif name == 'executable':
-#                print '|  |  +--Exec: ' + attrs['execname'] + ' in ' + attrs['path'] +' (' + attrs['desc'] + ') ' + attrs['lastupd']
-                appoexe = executable.Executable(attrs['execname'], attrs['path'], attrs['desc'], attrs['lastupd'])
+                appoexe = executable.Executable(attrs['execname'],
+                                                attrs['path'],
+                                                attrs['owner'],
+                                                attrs['mode'],
+                                                attrs['link'],
+                                                attrs['desc'],
+                                                attrs['lastupd'])
     
         def _end_element(name):
             global apposys,apponode,appoexe
@@ -46,11 +58,13 @@ class Configuration():
     
         def _char_data(data):
             pass
+        
         config = xml.parsers.expat.ParserCreate()
         config.StartElementHandler = _start_element
         config.EndElementHandler = _end_element
         config.CharacterDataHandler = _char_data
         config.ParseFile(cfd)
+        cfd.close()
     
     def add_system(self, sys):
         self._systems.append(sys)
@@ -73,23 +87,27 @@ class Configuration():
             fc = open(configfile, 'w')
             fc.write('<?xml version="1.0"?>\n')
             for sys in self._systems:
-                line ='<system systemname="' + sys.get_system_name() + \
-                '" desc="' + sys.get_system_description() + \
-                '" lastupd="' + sys.get_system_last_upd() + \
-                '">\n'
+                line =           '<system systemname="' + sys.get_system_name()
+                line = line + '"\n        desc="' + sys.get_system_description()
+                line = line + '"\n        lastupd="' + sys.get_system_last_upd()
+                line = line + '">\n'
                 fc.write(line)
                 for node in sys.get_system_node_list():
-                    line = '  <node hostname="' + node.get_node_name() + \
-                    '" desc="' + node.get_node_description() + \
-                    '" lastupd="' + node.get_node_last_upd() + \
-                    '">\n'
+                    line =           '  <node hostname="' + node.get_node_name()
+                    line = line + '"\n        ip="' + node.get_node_ip()
+                    line = line + '"\n        desc="' + node.get_node_description()
+                    line = line + '"\n        lastupd="' + node.get_node_last_upd()
+                    line = line + '">\n'
                     fc.write(line)
                     for exe in node.get_node_exec_list():
-                        line = '    <executable execname="' + exe.get_exec_name() + \
-                        '" path="' + exe.get_exec_location() + \
-                        '" desc="' + exe.get_exec_description() + \
-                        '" lastupd="' + exe.get_exec_last_upd() + \
-                        '"/>\n'
+                        line =           '    <executable execname="' + exe.get_exec_name()
+                        line = line + '"\n                path="' + exe.get_exec_location()
+                        line = line + '"\n                owner="' + exe.get_exec_owner()
+                        line = line + '"\n                mode="' + exe.get_exec_mode()
+                        line = line + '"\n                link="' + exe.get_exec_link()
+                        line = line + '"\n                desc="' + exe.get_exec_description()
+                        line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
+                        line = line + '"/>\n'
                         fc.write(line)
                     fc.write('  </node>\n')
                 fc.write('</system>\n')
