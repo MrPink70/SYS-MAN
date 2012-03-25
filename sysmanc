@@ -1,23 +1,29 @@
 #!/usr/bin/env python
 
-import sysman.client
-import socket,re
+import sysman.client,sysman.confhandler
+import socket,re,cPickle
 
 servername = socket.gethostname()
 serverport = 61874
+systems = sysman.confhandler.Configuration('/home/fabrizio/APPO/bck/sysmand.xml.save')
+ucraina = systems.get_system('Ucraina')
 
 print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
 print 'Type \'help\' for command list. Type \'quit\' to end session'
 
+def io():
+    while True:
+        comm = str(raw_input('@> '))
+        if comm == 'quit':
+            break
+        match = re.match('^(.+):(.+)$',comm)
+        if not match:
+            comm = comm + ':nop'
+        info = re.sub('[\n\r]','',connection.query(comm))
+        print info
+    print 'Bye!'
+    
 connection = sysman.client.Client(servername,serverport)
-while True:
-    comm = str(raw_input('@> '))
-    if comm == 'quit':
-        break
-    match = re.match('^(.+):(.+)$',comm)
-    if not match:
-        comm = comm + ':nop'
-    info = re.sub('[\n\r]','',connection.query(comm))
-    print info
-#info = connection.query('help:ciao')
-print 'Bye!'
+io()
+info = re.sub('[\n\r]','',connection.query('set_conf:%s\n' % cPickle.dumps(ucraina)))
+io()

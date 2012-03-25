@@ -33,27 +33,27 @@ class Server():
         try:
             while True:
                 conn, addr = self._sock.accept()
-#                print 'assign connection parameters'
+                print 'assign connection parameters'
                 # break off a thread to handle the connection
                 thread.start_new_thread(self._handle_connection,(conn,addr[0]))
-#                print 'starting thread'
+                print 'starting thread'
         except:
             print "Exception occured!"
         self.stop()
         
     def _handle_connection(self,conn,addr):
-#        print 'start handle_connection'
+        print 'start handle_connection'
         cd = conn.makefile()
-#        print 'create file descriptor'
+        print 'create file descriptor'
         for command in cd:
-            command = re.sub('[\n\r]','',command)
-#            print 'strip LF CR'
-            match = re.match('^(.+):(.+)$',command)
-#            print 'separate received token'
+            comm = re.sub('[\n\r]','',command)
+            print 'strip LF CR'
+            match = re.match('^(.+):(.+)$',comm)
+            print 'separate received token'
             req = match.group(1)
-#            print 'assigne request %s' % req
+            print 'assigne request %s' % req
             par = match.group(2)
-#            print 'assigne parameter %s' % par
+            print 'assigne parameter %s' % par
             with self._mutex:
                 if req == 'help':
                     cd.write('%s\n' % str(self._commandlist))
@@ -66,7 +66,18 @@ class Server():
                 elif req == 'status':
                     pass
                 elif req == 'set_conf':
-                    pass
+                    print 'in set_conf'
+                    match = re.match('^(.+):(.+)$',command)
+                    print 'matching'
+                    par = match.group(2)
+                    print par
+                    system = cPickle.loads(par)
+                    print 'load system'
+                    self._config.add_system(system)
+                    print 'adding system'
+                    self._config.save('/home/fabrizio/APPO/ucraina.xml')
+                    print 'saving configuration'
+#                    cd.write('Config added\n')
                 elif req == 'update':
                     pass
                 elif req == 'stop':
