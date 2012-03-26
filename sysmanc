@@ -5,7 +5,11 @@ import socket,re,cPickle
 
 servername = socket.gethostname()
 serverport = 61874
-systems = sysman.confhandler.Configuration('/home/fabrizio/APPO/bck/sysmand.xml.save')
+if servername == 'Giove':
+    systems = sysman.confhandler.Configuration('/home/fabrizio/APPO/bck/sysmand.xml.save')
+elif servername == 'D03':
+    systems = sysman.confhandler.Configuration('/home/frosa/APPO/bck/sysmand.xml.save')
+    systems.load_conf()
 ucraina = systems.get_system('Ucraina')
 
 print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
@@ -25,5 +29,9 @@ def io():
     
 connection = sysman.client.Client(servername,serverport)
 io()
-info = re.sub('[\n\r]','',connection.query('set_conf:%s\n' % cPickle.dumps(ucraina)))
+pkucraina = cPickle.dumps(ucraina)
+#print pkucraina
+info = re.sub('[\n\r]','',connection.query('set_conf:%s\n*DONE\n' % pkucraina))
+print info
 io()
+connection.socket().close()

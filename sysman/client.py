@@ -24,13 +24,13 @@ class Client():
     def query(self,req):
         with self.lock():
             #get the file
-            f=self.socket().makefile()
+            cd=self.socket().makefile()
             #send the query
-            f.write('%s\n' % req)
-            f.flush()
+            cd.write('%s\n' % req)
+            cd.flush()
             info=''
             #read until final token
-            for line in f:
+            for line in cd:
                 #get rid of excess newline
                 line=re.sub('\n','',line)
                 if line == '*DONE':

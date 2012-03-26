@@ -22,6 +22,10 @@ class Node:
         self._lastupd = lastupd
         self._execlist = []
         
+    def __str__(self):
+        return ('Node ' + self._nodename + '\n' +
+                '  IP ' + self._ip)
+        
     def set_node_description(self, description):
         self._description = description
     

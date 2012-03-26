@@ -7,6 +7,9 @@ class System():
         self._description = description
         self._lastupd = lastupd
 
+    def __str__(self):
+        return ("System " + str(self._name))
+
     def set_description(self, description):
         self._description = description
         

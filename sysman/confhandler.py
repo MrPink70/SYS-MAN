@@ -18,8 +18,10 @@ class Configuration():
         self._systems = []
         self._configfile = configfile
         
-    def is_config_available(self):
-        if self._configfile != '' and os.access(self._configfile, os.F_OK):
+    def is_config_available(self,configfile=''):
+        if configfile == '':
+            configfile = self._configfile
+        if configfile != '' and os.access(self._configfile, os.F_OK):
             return 1
         else:
             return 0
@@ -79,36 +81,39 @@ class Configuration():
             if sys.get_system_name() == systemname:
                 return sys
             
-    def save(self, configfile):
+    def save(self, configfile=''):
         if configfile != '':
             if os.access(configfile, os.F_OK):
                 basefile, xmlext = os.path.splitext(configfile)
                 shutil.move(configfile, basefile + '.bck')
-            fc = open(configfile, 'w')
-            fc.write('<?xml version="1.0"?>\n')
-            for sys in self._systems:
-                line =           '<system systemname="' + sys.get_system_name()
-                line = line + '"\n        desc="' + sys.get_system_description()
-                line = line + '"\n        lastupd="' + sys.get_system_last_upd()
+            cfgf = configfile
+        else:
+            cfgf = self._configfile
+        fc = open(cfgf, 'w')
+        fc.write('<?xml version="1.0"?>\n')
+        for sys in self._systems:
+            line =           '<system systemname="' + sys.get_system_name()
+            line = line + '"\n        desc="' + sys.get_system_description()
+            line = line + '"\n        lastupd="' + sys.get_system_last_upd()
+            line = line + '">\n'
+            fc.write(line)
+            for node in sys.get_system_node_list():
+                line =           '  <node hostname="' + node.get_node_name()
+                line = line + '"\n        ip="' + node.get_node_ip()
+                line = line + '"\n        desc="' + node.get_node_description()
+                line = line + '"\n        lastupd="' + node.get_node_last_upd()
                 line = line + '">\n'
                 fc.write(line)
-                for node in sys.get_system_node_list():
-                    line =           '  <node hostname="' + node.get_node_name()
-                    line = line + '"\n        ip="' + node.get_node_ip()
-                    line = line + '"\n        desc="' + node.get_node_description()
-                    line = line + '"\n        lastupd="' + node.get_node_last_upd()
-                    line = line + '">\n'
+                for exe in node.get_node_exec_list():
+                    line =           '    <executable execname="' + exe.get_exec_name()
+                    line = line + '"\n                path="' + exe.get_exec_location()
+                    line = line + '"\n                owner="' + exe.get_exec_owner()
+                    line = line + '"\n                mode="' + exe.get_exec_mode()
+                    line = line + '"\n                link="' + exe.get_exec_link()
+                    line = line + '"\n                desc="' + exe.get_exec_description()
+                    line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
+                    line = line + '"/>\n'
                     fc.write(line)
-                    for exe in node.get_node_exec_list():
-                        line =           '    <executable execname="' + exe.get_exec_name()
-                        line = line + '"\n                path="' + exe.get_exec_location()
-                        line = line + '"\n                owner="' + exe.get_exec_owner()
-                        line = line + '"\n                mode="' + exe.get_exec_mode()
-                        line = line + '"\n                link="' + exe.get_exec_link()
-                        line = line + '"\n                desc="' + exe.get_exec_description()
-                        line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
-                        line = line + '"/>\n'
-                        fc.write(line)
-                    fc.write('  </node>\n')
-                fc.write('</system>\n')
-            fc.close()
+                fc.write('  </node>\n')
+            fc.write('</system>\n')
+        fc.close()

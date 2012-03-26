@@ -24,6 +24,7 @@ class Executable():
         Constructor
         '''
         self._filename = execname
+        self._path = path
         self._location = path
         self._fullname = path + os.sep + execname
         self._owner = owner
@@ -31,6 +32,11 @@ class Executable():
         self._link = link
         self._description = description
         self._lastupd = lastupd
+        
+    def __str__(self):
+        return ('Executable ' + self._filename + '\n' +
+                '  Located in ' + self._path + '\n' +
+                '  Owned by ' + self._owner)
 
     def set_exec_description(self, description):
         '''
@@ -131,13 +137,14 @@ class Executable():
 #if __name__ == '__main__':
 #    import glob
 #    #path = str(raw_input('Inserisci il path degli eseguibili: '))
-#    #path = '/home/Subang/APPO'
+#    path = '/home/frosa/APPO'
 #    path = '/home/fabrizio/Test/SYS-MAN/APPO'
 #    listfile = glob.glob(path + '/E*3')
 #    print listfile
 #    for file in listfile:
 #        print '--------------------------------------------------------------------------------------'
-#        exfile = Executable(str(file).lstrip(path), path)
+#        print str(file)
+#        exfile = Executable(str(file).lstrip(path), path, 'root', '100')
 #        if exfile.is_versioned():
 #            print 'L\'eseguibile e\' stato generato sotto controllo di configurazione'
 #        else:
@@ -146,6 +153,6 @@ class Executable():
 #        print 'versione    :\n' + exfile.get_exec_version()
 #        #print 'md5         :\n' + exfile.get_md5()
 #        #print 'sha1        :\n' + exfile.get_sha1()
-#        #print 'privilegi   :\n' + oct(exfile.get_privileges())
-#        #print 'proprietario:\n' + str(exfile.get_owner())
+#        print 'privilegi   :\n' + oct(exfile.get_privileges())
+#        print 'proprietario:\n' + str(exfile.get_owner())
 #    print '--------------------------------------------------------------------------------------'        
