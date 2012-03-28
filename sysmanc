@@ -1,37 +1,201 @@
 #!/usr/bin/env python
 
-import sysman.client,sysman.confhandler
+import sysman.client,sysman.confhandler,sysman.commandoptions
+import sysman.commandoptions
+
 import socket,re,cPickle
+from subprocess import call
 
-servername = socket.gethostname()
-serverport = 61874
-if servername == 'Giove':
-    systems = sysman.confhandler.Configuration('/home/fabrizio/APPO/bck/sysmand.xml.save')
-elif servername == 'D03':
-    systems = sysman.confhandler.Configuration('/home/frosa/APPO/bck/sysmand.xml.save')
-    systems.load_conf()
-ucraina = systems.get_system('Ucraina')
+NOTSAVED = 0
+SAVED = 1
+NOFILE = 2
 
-print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
-print 'Type \'help\' for command list. Type \'quit\' to end session'
+commopt = sysman.commandoptions.Commandoptions()
+defaultport = commopt.options.port
+conffile = commopt.options.conffile
+sysscfg = sysman.confhandler.Configuration(conffile)
+systems = sysscfg.get_systems_list()
+statusmsg = ''
+if sysscfg.is_config_available(conffile):
+    saved = SAVED
+else:
+    saved = NOFILE
+
+# TEST PORPOSE
+
+#serverport = 61874
+#servername = socket.gethostname()
+#if servername == 'Giove':
+#    systems = sysman.confhandler.Configuration('/home/fabrizio/APPO/bck/sysmand.xml.save')
+#elif servername == 'D03':
+#    systems = sysman.confhandler.Configuration('/home/frosa/APPO/bck/sysmand.xml.save')
+#systems.load_conf()
+#ucraina = systems.get_system('Ucraina')
+
+#print 'Starting connection to server ' + servername + ' at port ' + str(serverport)
+# TEST PORPOSE END
+
+#print 'Type \'help\' for command list. Type \'quit\' to end session'
+
+def query(servername,serverport,comm):
+#        match = re.match('^(.+):(.+)$',comm)
+#        if not match:
+#            comm = comm + ':nop'
+    connection = sysman.client.Client(servername,serverport)
+    info = re.sub('[\n\r]','',connection.query(comm))
+    connection.socket().close()
+    return info
 
 def io():
+    global statusmsg
+    if not saved == NOFILE:
+        statusmsg = 'config file available: ' + conffile
+    else:
+        statusmsg = 'config file not available'
+    commandlist = []
+    new_comm('open system',open_sys,commandlist)
+    new_comm('create system',create_sys,commandlist)
+    new_comm('delete system',delete_sys,commandlist)
+    new_comm('save configuration',save_conf,commandlist)
     while True:
-        comm = str(raw_input('@> '))
-        if comm == 'quit':
+        comm = menu('Main Menu',commandlist,clean=1)
+        if comm == 'q':
             break
-        match = re.match('^(.+):(.+)$',comm)
-        if not match:
-            comm = comm + ':nop'
-        info = re.sub('[\n\r]','',connection.query(comm))
-        print info
     print 'Bye!'
+
+def head(title):
+    global statusmsg
+    head =  '\n\n\n:::: SysMan System Management ::::\n\n'
+    head = head + ' :: ' + statusmsg + ' ::\n\n'
+    head = head + ' ::  ' + title + '  ::\n\n'
+    return head
     
-connection = sysman.client.Client(servername,serverport)
+def prompt(pr):
+    return str(raw_input('\n' + pr + ' ::> '))
+
+def clscr():
+    call(['/usr/bin/clear'])
+
+def menu(title,commandlist,quitable=1,backable=0,clean=0):
+    command = {}
+    arguments = {}
+    menu = head(title)
+    for quadruple in commandlist:
+        act,expl,func,args = quadruple
+        menu = menu + ' :: ' + act + ') ' + expl + '\n'
+        command[act] = func
+        arguments[act] = args
+    if quitable:
+        menu = menu + ' :: q) quit\n'
+        command['q'] = quit_menu
+    if backable:
+        menu = menu + ' :: b) back\n'
+        command['b'] = back_menu
+    if clean:
+        clscr()
+    print menu
+    while True:
+        repl = prompt('SM')
+        if repl in command:
+            if arguments[repl] == []:
+                return command[repl]()
+            else:
+                return command[repl](arguments[repl])
+
+def null():
+    pass
+
+def act_char(title,commandlist):
+    lowerchars = 'acdefghijklmnoprstuvwxyz'
+    upperchars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    numbers = '0123456789'
+    allchars = lowerchars + upperchars + numbers
+    title = title.replace(' ','')
+    titler = title.replace('b','')
+    titler = titler.replace('q','')
+    for c in titler + title.upper() + allchars:
+        if c not in commandlist:
+            return c
+        
+def new_comm(title,function,commandlist,arguments=[]):
+    return commandlist.append((act_char(title,commandlist),title,function,arguments))
+
+def open_sys():
+    global statusmsg,activesys
+    title = 'Open System'
+    oldmsg = statusmsg
+    if saved == NOFILE:
+        statusmsg = 'config file not available'
+    else:
+#        statusmsg = 'config file: ' + conffile
+#        systems.load_conf()
+        commandlist = []
+        for system in systems:
+            name = system.get_system_name()
+            new_comm(name,load_sys,commandlist,[name])
+        comm = menu(title,commandlist,quitable=0,backable=1,clean=1)
+        if comm == 'b':
+            statusmsg = oldmsg
+        else:
+            activesys = comm
+            statusmsg = comm.get_system_name() + ' opened'
+    return 'b'
+
+def create_sys():
+    global statusmsg,saved,sysscfg
+    title = 'Create New System'
+    oldmsg = statusmsg
+    create = 0    
+    systemname = systemdesc = name = ''
+    while True:
+        clscr()
+        print head(title)
+        while name == '':
+            name = prompt('Insert system name [%s]' % systemname)
+            if not name == '':
+                systemname = name
+            elif not systemname == '':
+                name = systemname
+        systemdesc = prompt('Insert a system description')
+        rep = prompt('About to create a new system (insert \'q\' to exit):\n  Name: %s\n  Description: %s\nIs this correct? (y/n/q)' % (systemname,systemdesc)).lower()[0]
+        if rep == 'y':
+            create = 1
+            break
+        elif rep == 'q':
+            break
+        statusmsg = 'Something wrong?'
+        name = ''
+    if create:
+        saved = NOTSAVED
+        sys = sysman.system.System(systemname,systemdesc)
+        sysscfg.add_system(sys)
+        statusmsg = 'System %s created' % systemname
+    else:
+        statusmsg = oldmsg
+    return 'b'
+    
+def delete_sys():
+    print 'delete sys'
+    
+def save_conf():
+    print 'save conf'
+    
+def quit_menu():
+    return 'q'
+
+def back_menu():
+    return 'b'
+
+def load_sys(name):
+    global activesys,statusmsg
+    activesys = sysscfg.load_conf(name)
+    statusmsg = 'System %s Loaded'
+    return 'b'
+
 io()
-pkucraina = cPickle.dumps(ucraina)
+#pkucraina = cPickle.dumps(ucraina)
 #print pkucraina
-info = re.sub('[\n\r]','',connection.query('set_conf:%s\n*DONE\n' % pkucraina))
-print info
-io()
-connection.socket().close()
+#info = re.sub('[\n\r]','',connection.query('set_conf:%s\n*DONE\n' % pkucraina))
+#print info
+#io()
+#connection.socket().close()

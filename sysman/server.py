@@ -27,12 +27,17 @@ class Server():
                              'status',
                              'set_conf',
                              'update']
-        self._config = sysman.confhandler.Configuration(self._configfile) 
+        if self._configfile == '':
+            self._config = sysman.confhandler.Configuration()
+        else:
+            self._config = sysman.confhandler.Configuration(self._configfile) 
         self._sock.listen(2)
         try:
             while True:
                 conn, addr = self._sock.accept()
                 thread.start_new_thread(self._handle_connection,(conn,addr[0]))
+        except KeyboardInterrupt:
+            print '\nClosed By Keyboard Interruption.\n Bye!'            
         except:
             print "Exception occured!"
         self.stop()
@@ -44,7 +49,7 @@ class Server():
             match = re.match('^(.+):(.+)$',comm)
             if match:
                 req = match.group(1)
-                print req
+                #print req
                 par = match.group(2)
                 with self._mutex:
                     if req == 'help':
@@ -71,7 +76,8 @@ class Server():
                         resp = 'Update'
                     else:
                         resp = 'Invalid Order Received'
-                    cd.write('%s\n*DONE\n' % resp)                    
+                    cd.write('%s\n' % resp)
+                    cd.write('*DONE\n')
                     cd.flush()
             else:
                 with self._mutex:

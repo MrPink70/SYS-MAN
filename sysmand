@@ -6,23 +6,26 @@ Created on Mar 20, 2012
 @author: fabrizio
 '''
 
-import sysman.confhandler,sysman.server
+import sysman.confhandler,sysman.server,sysman.commandoptions
 
 import socket,os
 
-serverport = 61874
-lsu = '1988010101000000'
-localhostname = socket.gethostname()
+commopt = sysman.commandoptions.Commandoptions()
+#serverport = 61874
+serverport = commopt.options.port
+conffile = commopt.options.conffile
+#lsu = '1988010101000000'
+#localhostname = socket.gethostname()
 
-print 'Starting SYSMAN daemon on server ' + localhostname + ' port ' + str(serverport)
+#print 'Starting SYSMAN daemon on server ' + localhostname + ' port ' + str(serverport)
 
-if localhostname == 'Giove':
-    PATH = '/home/fabrizio/APPO'
-    localhostname = 'BN1'
-elif localhostname == 'D03':
-    PATH = '/home/frosa/APPO'
+#if localhostname == 'Giove':
+#    PATH = '/home/fabrizio/APPO'
+#    localhostname = 'BN1'
+#elif localhostname == 'D03':
+#    PATH = '/home/frosa/APPO'
 
-confFile =  PATH + os.sep + 'sysmand.xml'
+#confFile =  PATH + os.sep + 'sysmand.xml'
 daemon = sysman.server.Server(serverport,confFile)
 #
 #system1 = sysman.system.System('Ucraina', 'Ucraina Strela\' OPS System', lsu)

@@ -80,6 +80,9 @@ class Configuration():
         for sys in self._systems:
             if sys.get_system_name() == systemname:
                 return sys
+    
+    def get_systems_list(self):
+        return self._systems
             
     def save(self, configfile=''):
         if configfile != '':
