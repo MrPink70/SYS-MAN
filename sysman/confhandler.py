@@ -87,7 +87,7 @@ class Configuration():
     def save(self, configfile=''):
         if configfile != '':
             if os.access(configfile, os.F_OK):
-                basefile, xmlext = os.path.splitext(configfile)
+                basefile = os.path.splitext(configfile)[0]
                 shutil.move(configfile, basefile + '.bck')
             cfgf = configfile
         else:
@@ -95,27 +95,61 @@ class Configuration():
         fc = open(cfgf, 'w')
         fc.write('<?xml version="1.0"?>\n')
         for sys in self._systems:
-            line =           '<system systemname="' + sys.get_system_name()
-            line = line + '"\n        desc="' + sys.get_system_description()
-            line = line + '"\n        lastupd="' + sys.get_system_last_upd()
-            line = line + '">\n'
+#            line =           '<system systemname="' + sys.get_system_name()
+#            line = line + '"\n        desc="' + sys.get_system_description()
+#            line = line + '"\n        lastupd="' + sys.get_system_last_upd()
+#            line = line + '">\n'
+
+            line = '<system\n'\
+                   ' systemname="%s"\n'\
+                   ' desc="%s"\n'\
+                   ' lastupd="%s">\n'\
+                   % (sys.get_system_name(),
+                      sys.get_system_description(),
+                      sys.get_system_last_upd())
             fc.write(line)
             for node in sys.get_system_node_list():
-                line =           '  <node hostname="' + node.get_node_name()
-                line = line + '"\n        ip="' + node.get_node_ip()
-                line = line + '"\n        desc="' + node.get_node_description()
-                line = line + '"\n        lastupd="' + node.get_node_last_upd()
-                line = line + '">\n'
+#                line =           '  <node hostname="' + node.get_node_name()
+#                line = line + '"\n        ip="' + node.get_node_ip()
+#                line = line + '"\n        desc="' + node.get_node_description()
+#                line = line + '"\n        lastupd="' + node.get_node_last_upd()
+#                line = line + '">\n'
+
+                line = '  <node\n'\
+                       '   hostname="%s"\n'\
+                       '   ip="%s"\n'\
+                       '   desc="%s"\n'\
+                       '   lastupd="%s">\n'\
+                       % (node.get_node_name(),
+                          node.get_node_ip(),
+                          node.get_node_description(),
+                          node.get_node_last_upd())
                 fc.write(line)
                 for exe in node.get_node_exec_list():
-                    line =           '    <executable execname="' + exe.get_exec_name()
-                    line = line + '"\n                path="' + exe.get_exec_location()
-                    line = line + '"\n                owner="' + exe.get_exec_owner()
-                    line = line + '"\n                mode="' + exe.get_exec_mode()
-                    line = line + '"\n                link="' + exe.get_exec_link()
-                    line = line + '"\n                desc="' + exe.get_exec_description()
-                    line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
-                    line = line + '"/>\n'
+#                    line =           '    <executable execname="' + exe.get_exec_name()
+#                    line = line + '"\n                path="' + exe.get_exec_location()
+#                    line = line + '"\n                owner="' + exe.get_exec_owner()
+#                    line = line + '"\n                mode="' + exe.get_exec_mode()
+#                    line = line + '"\n                link="' + exe.get_exec_link()
+#                    line = line + '"\n                desc="' + exe.get_exec_description()
+#                    line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
+#                    line = line + '"/>\n'
+                    line = '    <executable\n'\
+                           '     execname="%s"\n'\
+                           '     path="%s"\n'\
+                           '     owner="%s"\n'\
+                           '     mode="%s"\n'\
+                           '     link="%s"\n'\
+                           '     desc="%s"\n'\
+                           '     lastupd="%s"/>\n'\
+                           % (exe.get_exec_name(),
+                              exe.get_exec_location(),
+                              exe.get_exec_owner(),
+                              exe.get_exec_mode(),
+                              exe.get_exec_link(),
+                              exe.get_exec_description(),
+                              exe.get_exec_last_upd())
+                    
                     fc.write(line)
                 fc.write('  </node>\n')
             fc.write('</system>\n')

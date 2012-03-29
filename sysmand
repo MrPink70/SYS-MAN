@@ -6,9 +6,9 @@ Created on Mar 20, 2012
 @author: fabrizio
 '''
 
-import sysman.confhandler,sysman.server,sysman.commandoptions
+import sysman.server,sysman.commandoptions
 
-import socket,os
+#import socket,os
 
 commopt = sysman.commandoptions.Commandoptions()
 #serverport = 61874
@@ -26,7 +26,7 @@ conffile = commopt.options.conffile
 #    PATH = '/home/frosa/APPO'
 
 #confFile =  PATH + os.sep + 'sysmand.xml'
-daemon = sysman.server.Server(serverport,confFile)
+daemon = sysman.server.Server(serverport,conffile)
 #
 #system1 = sysman.system.System('Ucraina', 'Ucraina Strela\' OPS System', lsu)
 #node1 = sysman.node.Node('D01', 'Controller Working Position', lsu)

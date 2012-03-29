@@ -19,7 +19,14 @@ class Executable():
         
     '''
 
-    def __init__(self, execname, path, owner, mode, link='', description='', lastupd='19880000000000'):
+    def __init__(self,
+                 execname,
+                 path,
+                 owner,
+                 mode,
+                 link='',
+                 description='',
+                 lastupd='19880000000000'):
         '''
         Constructor
         '''
@@ -85,7 +92,8 @@ class Executable():
         Return a list of the Executable's components
         Equivalent to the shell command 'ident EXXXYYYN-MMRFCOOOO | grep CSCI' 
         '''
-        fullversion = check_output(['/usr/bin/ident', self._fullname]).splitlines()
+        fullversion = check_output(['/usr/bin/ident',
+                                    self._fullname]).splitlines()
         version = ''
         for line in fullversion:
             if line.find('CSCI') > -1: version = version + line.lstrip() + '\n'
