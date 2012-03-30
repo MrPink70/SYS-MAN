@@ -15,7 +15,6 @@ commopt = sysman.commandoptions.Commandoptions()
 defaultport = commopt.options.port
 conffile = commopt.options.conffile
 sysscfg = sysman.confhandler.Configuration(conffile)
-systems = sysscfg.get_systems_list()
 statusmsg = ''
 #global activesys
 if sysscfg.is_config_available(conffile):
@@ -148,12 +147,13 @@ def new_comm(title,function,commandlist,arguments=[]):
 def open_sys():
     global statusmsg,activesys
     title = 'Open System'
-#    oldmsg = statusmsg
     if saved == NOFILE:
         statusmsg = 'Config file not available'
+    elif len(sysscfg.get_systems_list()) == 0:
+        statusmsg = 'No system available'
     else:
         commandlist = []
-        for system in systems:
+        for system in sysscfg.get_systems_list():
             name = system.get_system_name()
             new_comm(name,load_sys,commandlist,[name])
 #        comm = menu(title,commandlist,quitable=0,backable=1,clean=1)
@@ -210,9 +210,19 @@ def create_sys():
         statusmsg = oldmsg
     return 'b'
     
-def delete_sys(namelist):
-    global activesys,statusmsg
-    print 'delete sys'
+def delete_sys():
+    global activesys,statusmsg,saved,sysscfg
+    title = 'Remove a System'
+#    oldmsg = statusmsg
+    if saved == NOFILE:
+        statusmsg = 'Config file not available'
+    else:
+        commandlist = []
+        for system in sysscfg.get_systems_list():
+            name = system.get_system_name()
+            new_comm(name,rm_sys,commandlist,[name])
+        menu(title,commandlist,quitable=0,backable=1,clean=1)
+    return 'b'
     
 def save_conf():
     print 'save conf'
@@ -227,7 +237,20 @@ def load_sys(namelist):
     global activesys,statusmsg
     if len(namelist) == 1:
         activesys = sysscfg.get_system(namelist[0])
-        statusmsg = 'System %s Loaded' % namelist[0]
+        statusmsg = 'System %s loaded' % namelist[0]
+    return 'b'
+
+def rm_sys(namelist):
+    global sysscfg,activesys,saved,statusmsg
+    if len(namelist) == 1:
+        try:
+            if activesys.get_system_name() == namelist[0]:
+                del activesys
+        except NameError:
+            pass 
+        sysscfg.remove_system(namelist[0])
+        statusmsg = 'System %s removed'
+        saved = NOTSAVED
     return 'b'
 
 io()
