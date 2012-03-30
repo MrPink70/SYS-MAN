@@ -56,13 +56,22 @@ def io():
         statusmsg = 'Config file not available'
     commandlist = []
     new_comm('open system',open_sys,commandlist)
+    new_comm('edit system',edit_sys,commandlist)
     new_comm('create system',create_sys,commandlist)
+    new_comm('update system',create_sys,commandlist,[True])
     new_comm('delete system',delete_sys,commandlist)
-    new_comm('load from file',load_file,commandlist)
+    new_comm('load configuration from file',load_file,commandlist)
     new_comm('save configuration',save_conf,commandlist)
     while True:
         comm = menu('Main Menu',commandlist,clean=1)
         if comm == 'q':
+            if saved == NOTSAVED:
+                clscr()
+                rep = prompt(red_bold('The actual configuration is not saved.\n') +
+                blue_bold(' Do you want to save it before to proceed?'),
+                ['y','n'],1)
+                if rep == 'y':
+                    save_conf()
             break
     print 'Bye!'
 
@@ -188,12 +197,25 @@ def open_sys():
 #            statusmsg = activesys.get_system_name() + ' opened'
     return 'b'
 
-def create_sys():
+def edit_sys():
+    title = 'Edit System'
+    commandlist = []
+    new_comm('create node',create_node,commandlist)
+    new_comm('',)
+    new_comm('save configuration',save_conf,commandlist)
+    clscr()
+    print menu(title)
+    return 'b'
+
+def create_sys(update=False):
     global statusmsg,saved,sysscfg
-    title = 'Create New System'
+    if update:
+        title = 'Update System Informations'
+    else:
+        title = 'Create New System'
     oldmsg = statusmsg
     statusmsg = 'Fields with (*) symbol are mandatory'
-    create = 0    
+    create = 0
     systemname = systemdesc = name = ''
     while True:
         clscr()
@@ -219,21 +241,24 @@ def create_sys():
                      blue_bold('Is this correct?'),['y','n','q'],1).lower()[0]
         if rep == 'y':
             create = 1
-            for system in sysscfg.get_systems_list():
-                if system.get_system_name() == systemname:
-                    # Found system with same name. Ask to remove
-                    rep = prompt(red_bold('System ') +\
-                                bold(systemname) +\
-                                red_bold(' already exist.\n') +\
-                                blue_bold('Do you want to overwrite' +\
-                                          ' the old one?'),['y','n'],1)
-                    if rep == 'y':
-                        # Remove the old system 
-                        rm_sys([systemname])
-                    else:
-                        create = 0
-                        statusmsg = 'System not overwritten'
-                    break
+            if update:
+                rm_sys([activesys.get_system_name()])
+            else:
+                for system in sysscfg.get_systems_list():
+                    if system.get_system_name() == systemname:
+                        # Found system with same name. Ask to remove
+                        rep = prompt(red_bold('System ') +\
+                                     bold(systemname) +\
+                                     red_bold(' already exist.\n') +\
+                                     blue_bold('Do you want to overwrite' +\
+                                               ' the old one?'),['y','n'],1)
+                        if rep == 'y':
+                            # Remove the old system 
+                            rm_sys([systemname])
+                        else:
+                            create = 0
+                            statusmsg = 'System not overwritten'
+                        break
             if create:
                 break
         elif rep == 'q':
@@ -245,7 +270,11 @@ def create_sys():
         saved = NOTSAVED
         sys = sysman.system.System(systemname,systemdesc)
         sysscfg.add_system(sys)
-        statusmsg = 'System %s created' % systemname
+        if update:
+            load_sys([systemname])
+            statusmsg = 'System %s updated' % systemname
+        else:
+            statusmsg = 'System %s created' % systemname
     else:
         statusmsg = oldmsg
     return 'b'
@@ -338,6 +367,9 @@ def load_file():
         saved = SAVED
     else:
         statusmsg = 'Configuration file not found'
+
+def create_node():
+    return 'b'
 
 def quit_menu():
     return 'q'
