@@ -4,7 +4,7 @@ import sysman.client,sysman.confhandler,sysman.commandoptions
 import sysman.commandoptions
 from sysman.colours import *
 
-import socket,re,cPickle
+import socket,re,os
 from subprocess import call
 
 NOTSAVED = 0
@@ -19,6 +19,7 @@ statusmsg = ''
 #global activesys
 if sysscfg.is_config_available(conffile):
     saved = SAVED
+    sysscfg.load_conf()
 else:
     saved = NOFILE
 
@@ -89,8 +90,26 @@ def sub_head():
     return conf + filename + syst + sysname
         
     
-def prompt(pr):
-    return str(raw_input('\n' + pr + ' :: ' + bold('>') + ' '))
+def prompt(pr,keys=[],pk=0):
+    ret = pr.count('\n') + 3
+    rep = ''
+    ks = ''
+    if not len(keys) == 0:
+        if pk:
+            for k in keys:
+                ks = ks + k + '/'
+            ks = '(' + ks.rstrip('/') + ')'
+            pr = '\n' + pr + ' ' + green_bold(ks) + ' :: ' + bold('>') + ' '
+        else:
+            pr = '\n' + pr + ' :: ' + bold('>') + ' '
+        rep = str(raw_input(pr))
+        while not rep in keys:
+            print '\033[%dF' % ret
+            rep = str(raw_input(pr))
+    else:
+        pr = '\n' + pr + ' :: ' + bold('>') + ' '
+        rep = str(raw_input(pr))
+    return rep
 
 def clscr():
     call(['/usr/bin/clear'])
@@ -116,7 +135,7 @@ def menu(title,commandlist,quitable=1,backable=0,clean=0):
         clscr()
     print menu
     while True:
-        repl = prompt(red_bold('SM'))
+        repl = prompt(red_bold('SM'),command.keys(),0)
         if repl in command:
             if len(arguments[repl]) == 0:
                 return command[repl]()
@@ -178,7 +197,7 @@ def create_sys():
         while name == '':
             name = prompt(blue_bold('Insert system name (*) [') +
                           bold(systemname) + 
-                          blue_bold(']') )
+                          blue_bold(']'))
             if not name == '':
                 systemname = name
             elif not systemname == '':
@@ -193,13 +212,30 @@ def create_sys():
                      blue_bold('  Description: ') +\
                      bold(systemdesc) +\
                      '\n' +\
-                     blue_bold('Is this correct? (y/n/q)')).lower()[0]
+                     blue_bold('Is this correct?'),['y','n','q'],1).lower()[0]
         if rep == 'y':
             create = 1
-            break
+            for system in sysscfg.get_systems_list():
+                if system.get_system_name() == systemname:
+                    # Found system with same name. Ask to remove
+                    rep = prompt(red_bold('System ') +\
+                                bold(systemname) +\
+                                red_bold(' already exist.\n') +\
+                                blue_bold('Do you want to overwrite' +\
+                                          ' the old one?'),['y','n'],1)
+                    if rep == 'y':
+                        # Remove the old system 
+                        rm_sys([systemname])
+                    else:
+                        create = 0
+                        statusmsg = 'System not overwritten'
+                    break
+            if create:
+                break
         elif rep == 'q':
             break
-        statusmsg = 'Something wrong?'
+        else:
+            statusmsg = 'Something wrong?'
         name = ''
     if create:
         saved = NOTSAVED
@@ -225,7 +261,53 @@ def delete_sys():
     return 'b'
     
 def save_conf():
-    print 'save conf'
+    global sysscfg,statusmsg,conffile,saved
+    newconffile = ''
+    clscr()
+    save = False
+    rep = prompt(red_bold('About to save actual configuration:\n') +\
+                 blue_bold(' Do you want to use the file \"') +\
+                 bold(conffile) +\
+                 blue_bold('\"?'),['y','n'],1)
+    if rep == 'n':
+        while True: 
+            newconffile = prompt(blue_bold('Insert the filename:'))
+            if os.access(os.path.dirname(newconffile),os.F_OK):
+                if os.access(os.path.dirname(newconffile),os.W_OK):
+                    if os.access(newconffile, os.F_OK):
+                        rep = prompt(red_bold('The file already exists.\n') +\
+                                     blue_bold(' Do you want to overwrite it?'),
+                                     ['y','n'],1)
+                        if rep == 'y':
+                            save = True
+                            break
+                    else:
+                        save = True
+                        break
+                else:
+                    prompt(red_bold('It\'s not possible to access the' +\
+                                    ' directory \"') +
+                           bold(os.path.dirname(newconffile)) +
+                           blue_bold(' You need to change path'))
+            else:
+                rep = prompt(red_bold('The directory \"') +
+                             bold(os.path.dirname(newconffile)) +
+                             red_bold(' does not exists.\n') +
+                             blue_bold(' Do you want to create it?'),
+                             ['y','n'],1)
+                if rep == 'y':
+                    os.makedirs(os.path.dirname(newconffile))
+                    save = True
+                    break
+    else:
+        newconffile = conffile
+        save = True
+    if save:
+        conffile = newconffile
+        sysscfg.save(conffile)
+        statusmsg = 'Configuration saved'
+        saved = SAVED
+    return 'b'
     
 def quit_menu():
     return 'q'
@@ -249,7 +331,7 @@ def rm_sys(namelist):
         except NameError:
             pass 
         sysscfg.remove_system(namelist[0])
-        statusmsg = 'System %s removed'
+        statusmsg = 'System %s removed' % namelist[0]
         saved = NOTSAVED
     return 'b'
 
