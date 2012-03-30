@@ -58,6 +58,7 @@ def io():
     new_comm('open system',open_sys,commandlist)
     new_comm('create system',create_sys,commandlist)
     new_comm('delete system',delete_sys,commandlist)
+    new_comm('load from file',load_file,commandlist)
     new_comm('save configuration',save_conf,commandlist)
     while True:
         comm = menu('Main Menu',commandlist,clean=1)
@@ -99,16 +100,19 @@ def prompt(pr,keys=[],pk=0):
             for k in keys:
                 ks = ks + k + '/'
             ks = '(' + ks.rstrip('/') + ')'
-            pr = '\n' + pr + ' ' + green_bold(ks) + ' :: ' + bold('>') + ' '
+            pr = '\n' + pr + ' ' + green_bold(ks) + ' :: ' + bold('>') + ' \033[0J'
         else:
-            pr = '\n' + pr + ' :: ' + bold('>') + ' '
+            pr = '\n' + pr + ' :: ' + bold('>') + ' \033[0J'
         rep = str(raw_input(pr))
         while not rep in keys:
             print '\033[%dF' % ret
             rep = str(raw_input(pr))
     else:
-        pr = '\n' + pr + ' :: ' + bold('>') + ' '
+        pr = '\n' + pr + ' :: ' + bold('>') + ' \033[0J'
         rep = str(raw_input(pr))
+        while rep == '' and not pk:
+            print '\033[%dF' % ret
+            rep = str(raw_input(pr))
     return rep
 
 def clscr():
@@ -202,7 +206,7 @@ def create_sys():
                 systemname = name
             elif not systemname == '':
                 name = systemname
-        systemdesc = prompt(blue_bold('Insert a system description'))
+        systemdesc = prompt(blue_bold('Insert a system description'),pk=1)
         rep = prompt(red_bold('About to create a new system (insert' +\
                               ' \'q\' to exit):') +\
                      '\n' +\
@@ -263,7 +267,9 @@ def delete_sys():
 def save_conf():
     global sysscfg,statusmsg,conffile,saved
     newconffile = ''
+    title = 'Save Configuration'
     clscr()
+    print head(title)
     save = False
     rep = prompt(red_bold('About to save actual configuration:\n') +\
                  blue_bold(' Do you want to use the file \"') +\
@@ -272,6 +278,8 @@ def save_conf():
     if rep == 'n':
         while True: 
             newconffile = prompt(blue_bold('Insert the filename:'))
+            if os.path.dirname(newconffile) == '':
+                newconffile = os.getcwd() + os.sep + newconffile
             if os.access(os.path.dirname(newconffile),os.F_OK):
                 if os.access(os.path.dirname(newconffile),os.W_OK):
                     if os.access(newconffile, os.F_OK):
@@ -292,7 +300,7 @@ def save_conf():
             else:
                 rep = prompt(red_bold('The directory \"') +
                              bold(os.path.dirname(newconffile)) +
-                             red_bold(' does not exists.\n') +
+                             red_bold('\" does not exists.\n') +
                              blue_bold(' Do you want to create it?'),
                              ['y','n'],1)
                 if rep == 'y':
@@ -309,6 +317,28 @@ def save_conf():
         saved = SAVED
     return 'b'
     
+def load_file():
+    global conffile,sysscfg,statusmsg,saved
+    title = 'Load Configuration File'
+    clscr()
+    print head(title)
+    if saved == NOTSAVED:
+        rep = prompt(red_bold('The actual configuration is not saved.\n') +
+                     blue_bold(' Do you want to save it before to proceed?'),
+                     ['y','n'],1)
+        if rep == 'y':
+            save_conf()
+    newconffile = prompt(red_bold('About to load a configuration file:\n') +
+                         blue_bold(' Insert the filename:'))
+    if os.access(newconffile, os.R_OK):
+        conffile = newconffile
+        sysscfg = sysman.confhandler.Configuration(conffile)
+        sysscfg.load_conf()
+        statusmsg = 'Configuration loaded'
+        saved = SAVED
+    else:
+        statusmsg = 'Configuration file not found'
+
 def quit_menu():
     return 'q'
 
