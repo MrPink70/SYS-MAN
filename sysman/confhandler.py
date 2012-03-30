@@ -27,6 +27,7 @@ class Configuration():
             return 0
         
     def load_conf(self):
+        syss = []
         cfd = open(self._configfile,'r')
         
         def _start_element(name, attrs):
@@ -51,8 +52,10 @@ class Configuration():
     
         def _end_element(name):
             global apposys,apponode,appoexe
-            if name == 'system':
-                self._systems.append(apposys)
+            if name == 'document':
+                self._systems = syss
+            elif name == 'system':
+                syss.append(apposys)
             elif name == 'node':
                 apposys.insert_system_node(apponode)
             elif name == 'executable':
@@ -94,16 +97,17 @@ class Configuration():
             cfgf = self._configfile
         fc = open(cfgf, 'w')
         fc.write('<?xml version="1.0"?>\n')
+        fc.write('<document>')
         for sys in self._systems:
 #            line =           '<system systemname="' + sys.get_system_name()
 #            line = line + '"\n        desc="' + sys.get_system_description()
 #            line = line + '"\n        lastupd="' + sys.get_system_last_upd()
 #            line = line + '">\n'
 
-            line = '<system\n'\
-                   ' systemname="%s"\n'\
-                   ' desc="%s"\n'\
-                   ' lastupd="%s">\n'\
+            line = '  <system\n'\
+                   '   systemname="%s"\n'\
+                   '   desc="%s"\n'\
+                   '   lastupd="%s">\n'\
                    % (sys.get_system_name(),
                       sys.get_system_description(),
                       sys.get_system_last_upd())
@@ -115,11 +119,11 @@ class Configuration():
 #                line = line + '"\n        lastupd="' + node.get_node_last_upd()
 #                line = line + '">\n'
 
-                line = '  <node\n'\
-                       '   hostname="%s"\n'\
-                       '   ip="%s"\n'\
-                       '   desc="%s"\n'\
-                       '   lastupd="%s">\n'\
+                line = '    <node\n'\
+                       '     hostname="%s"\n'\
+                       '     ip="%s"\n'\
+                       '     desc="%s"\n'\
+                       '     lastupd="%s">\n'\
                        % (node.get_node_name(),
                           node.get_node_ip(),
                           node.get_node_description(),
@@ -134,14 +138,14 @@ class Configuration():
 #                    line = line + '"\n                desc="' + exe.get_exec_description()
 #                    line = line + '"\n                lastupd="' + exe.get_exec_last_upd()
 #                    line = line + '"/>\n'
-                    line = '    <executable\n'\
-                           '     execname="%s"\n'\
-                           '     path="%s"\n'\
-                           '     owner="%s"\n'\
-                           '     mode="%s"\n'\
-                           '     link="%s"\n'\
-                           '     desc="%s"\n'\
-                           '     lastupd="%s"/>\n'\
+                    line = '      <executable\n'\
+                           '       execname="%s"\n'\
+                           '       path="%s"\n'\
+                           '       owner="%s"\n'\
+                           '       mode="%s"\n'\
+                           '       link="%s"\n'\
+                           '       desc="%s"\n'\
+                           '       lastupd="%s"/>\n'\
                            % (exe.get_exec_name(),
                               exe.get_exec_location(),
                               exe.get_exec_owner(),
@@ -153,4 +157,5 @@ class Configuration():
                     fc.write(line)
                 fc.write('  </node>\n')
             fc.write('</system>\n')
+        fc.write('</document>')
         fc.close()
