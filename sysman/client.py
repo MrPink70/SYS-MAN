@@ -20,7 +20,7 @@ class Client():
         self._lock=thread.allocate_lock()
         self._addr = addr
         self._port = port
-        
+
     def query(self,req):
         with self.lock():
             #get the file
@@ -39,7 +39,7 @@ class Client():
                 #append the line
                 info += '%s\n' % line
             return info
-        
+
     def socket(self):
         """Returns the backing socket.
         
@@ -62,7 +62,7 @@ class Client():
         """Releases the backing lock.
         """
         self._lock.release()
-    
+
     def addr(self):
         """Returns the remote address in use.
         """

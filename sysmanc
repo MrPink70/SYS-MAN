@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import sysman.client,sysman.confhandler,sysman.commandoptions
-import sysman.commandoptions
-from sysman.colours import *
 
-import socket,re,os
+from sysman.colours import red_bold,blue_bold,green_bold,bold
+from sysman.colours import green_bold_reverse,yellow_bold
+
+import re,os
 from subprocess import call
 
 NOTSAVED = 0
@@ -67,7 +68,8 @@ def io():
         if comm == 'q':
             if saved == NOTSAVED:
                 clscr()
-                rep = prompt(red_bold('The actual configuration is not saved.\n') +
+                rep = prompt(red_bold('The actual configuration'\
+                                      ' is not saved.\n') +
                 blue_bold(' Do you want to save it before to proceed?'),
                 ['y','n'],1)
                 if rep == 'y':
@@ -109,7 +111,8 @@ def prompt(pr,keys=[],pk=0):
             for k in keys:
                 ks = ks + k + '/'
             ks = '(' + ks.rstrip('/') + ')'
-            pr = '\n' + pr + ' ' + green_bold(ks) + ' :: ' + bold('>') + ' \033[0J'
+            pr = '\n' + pr + ' ' + green_bold(ks) +\
+                 ' :: ' + bold('>') + ' \033[0J'
         else:
             pr = '\n' + pr + ' :: ' + bold('>') + ' \033[0J'
         rep = str(raw_input(pr))
@@ -188,13 +191,7 @@ def open_sys():
         for system in sysscfg.get_systems_list():
             name = system.get_system_name()
             new_comm(name,load_sys,commandlist,[name])
-#        comm = menu(title,commandlist,quitable=0,backable=1,clean=1)
         menu(title,commandlist,quitable=0,backable=1,clean=1)
-#        if comm == 'b':
-#            statusmsg = oldmsg
-#        else:
-#            activesys = comm
-#            statusmsg = activesys.get_system_name() + ' opened'
     return 'b'
 
 def edit_sys():
@@ -209,21 +206,29 @@ def edit_sys():
 
 def create_sys(update=False):
     global statusmsg,saved,sysscfg
-    if update:
-        title = 'Update System Informations'
-    else:
-        title = 'Create New System'
     oldmsg = statusmsg
     statusmsg = 'Fields with (*) symbol are mandatory'
     create = 0
     systemname = systemdesc = name = ''
+    if update:
+        title = 'Update System Informations'
+        try:
+            systemname = activesys.get_system_name()
+        except NameError:
+            pass 
+    else:
+        title = 'Create New System'
     while True:
         clscr()
         print head(title)
         while name == '':
+            if systemname == '':
+                emptyok = 0
+            else:
+                emptyok = 1
             name = prompt(blue_bold('Insert system name (*) [') +
                           bold(systemname) + 
-                          blue_bold(']'))
+                          blue_bold(']'),pk=emptyok)
             if not name == '':
                 systemname = name
             elif not systemname == '':
@@ -242,7 +247,10 @@ def create_sys(update=False):
         if rep == 'y':
             create = 1
             if update:
-                rm_sys([activesys.get_system_name()])
+                try:
+                    rm_sys([activesys.get_system_name()])
+                except NameError:
+                    pass
             else:
                 for system in sysscfg.get_systems_list():
                     if system.get_system_name() == systemname:
