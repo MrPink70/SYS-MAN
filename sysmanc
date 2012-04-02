@@ -86,20 +86,30 @@ def head(title):
     return head
     
 def sub_head():
-    global activesys,saved,conffile
+    global activesys,activenode,activeexe,saved,conffile
     try:
         sysname = bold(activesys.get_system_name()) + '\n'
     except NameError:
         sysname = '\n'
-    syst = ' :: ' + yellow_bold('System loaded: ')
-    conf = ' :: ' + yellow_bold('Config file: ')
+    try:
+        nodename = bold(activenode.get_node_name()) + '\n'
+    except NameError:
+        nodename = '\n'
+    try:
+        exename = bold(activeexe.get_exec_name()) + '\n'
+    except NameError:
+        exename = '\n'
+    conf = ' :: ' + yellow_bold('Configuration file : ')
+    syst = ' :: ' + yellow_bold('System loaded      : ')
+    node = ' :: ' + yellow_bold('Node loaded        : ')
+    exe = ' :: ' + yellow_bold('Executable loaded  : ')
     if saved == NOFILE:
         filename = '\n'
     elif saved == SAVED:
         filename = conffile + '\n'
     elif saved == NOTSAVED:
         filename = bold(conffile + '*\n')
-    return conf + filename + syst + sysname
+    return conf + filename + syst + sysname + node + nodename + exe + exename
         
     
 def prompt(pr,keys=[],pk=0):
