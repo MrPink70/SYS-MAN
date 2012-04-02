@@ -57,7 +57,7 @@ def io():
         statusmsg = 'Config file not available'
     commandlist = []
     new_comm('open system',open_sys,commandlist)
-    new_comm('edit system',edit_sys,commandlist)
+    new_comm('edit system',add_node_to_sys,commandlist)
     new_comm('create system',create_sys,commandlist)
     new_comm('update system',create_sys,commandlist,[True])
     new_comm('delete system',delete_sys,commandlist)
@@ -103,7 +103,7 @@ def sub_head():
         
     
 def prompt(pr,keys=[],pk=0):
-    ret = pr.count('\n') + 3
+    ret = pr.count('\n') + 4
     rep = ''
     ks = ''
     if not len(keys) == 0:
@@ -115,15 +115,19 @@ def prompt(pr,keys=[],pk=0):
                  ' :: ' + bold('>') + ' \033[0J'
         else:
             pr = '\n' + pr + ' :: ' + bold('>') + ' \033[0J'
+        print ''
         rep = str(raw_input(pr))
         while not rep in keys:
             print '\033[%dF' % ret
+            print bold (rep) + red_bold(' is not a valid option')
             rep = str(raw_input(pr))
     else:
         pr = '\n' + pr + ' :: ' + bold('>') + ' \033[0J'
+        print ''
         rep = str(raw_input(pr))
         while rep == '' and not pk:
             print '\033[%dF' % ret
+            print red_bold('Empty string is not allowed')
             rep = str(raw_input(pr))
     return rep
 
@@ -169,12 +173,21 @@ def act_char(title,commandlist):
     title = title.replace(' ','')
     titler = title.replace('b','')
     titler = titler.replace('q','')
-    for c in titler + title.upper() + allchars:
-        if c not in commandlist:
+    allpossible = titler + title.upper() + allchars
+    for c in allpossible:
+        if len(commandlist) == 0:
             return c
+        else:
+            trovato = False
+            for comm in commandlist:
+                if c == str(comm[0]):
+                    trovato = True
+            if not trovato:
+                return c
         
 def new_comm(title,function,commandlist,arguments=[]):
-    return commandlist.append((act_char(title,commandlist),
+    act = act_char(title,commandlist)
+    return commandlist.append((act,
                                title,
                                function,
                                arguments))
@@ -194,14 +207,17 @@ def open_sys():
         menu(title,commandlist,quitable=0,backable=1,clean=1)
     return 'b'
 
-def edit_sys():
+def add_node_to_sys():
     title = 'Edit System'
     commandlist = []
+    new_comm('open node',open_node,commandlist)
+    new_comm('edit node',edit_node,commandlist)
     new_comm('create node',create_node,commandlist)
-    new_comm('',)
+    new_comm('update node',update_node,commandlist)
+    new_comm('delete node',delete_node,commandlist)
     new_comm('save configuration',save_conf,commandlist)
     clscr()
-    print menu(title)
+    print menu(title,commandlist,quitable=0,backable=1,clean=1)
     return 'b'
 
 def create_sys(update=False):
@@ -377,6 +393,18 @@ def load_file():
         statusmsg = 'Configuration file not found'
 
 def create_node():
+    return 'b'
+
+def open_node():
+    return 'b'
+
+def edit_node():
+    return 'b'
+
+def update_node():
+    return 'b'
+
+def delete_node():
     return 'b'
 
 def quit_menu():
